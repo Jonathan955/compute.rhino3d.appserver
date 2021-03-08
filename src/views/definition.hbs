@@ -52,15 +52,14 @@
                 </div>
                 {{/each}}
                 <div><button id="downloadButton" disabled>Download</button></div>
+                <div><a href="{{name}}" download="{{name}}.html">Save source code</a></div>
             </div>
-
-            <div id="canvas"></div>
         </div>
 
         <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.module.js'
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.124.0/examples/jsm/controls/OrbitControls.js'
-import { Rhino3dmLoader } from 'https://cdn.jsdelivr.net/npm/three@0.124.0/examples/jsm/loaders/3DMLoader.js'
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.126.0/build/three.module.js'
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.126.0/examples/jsm/controls/OrbitControls.js'
+import { Rhino3dmLoader } from 'https://cdn.jsdelivr.net/npm/three@0.126.0/examples/jsm/loaders/3DMLoader.js'
 import rhino3dm from 'https://cdn.jsdelivr.net/npm/rhino3dm@0.15.0-beta/rhino3dm.module.js'
 
 // set up loader for converting the results to threejs
@@ -140,6 +139,7 @@ function init() {
 
     // create the renderer and add it to the html
     renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setPixelRatio( window.devicePixelRatio )
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
 
@@ -197,13 +197,6 @@ function collectResults(responseJson) {
     if( doc !== undefined)
         doc.delete()
 
-    // clear objects from scene
-    scene.traverse(child => {
-        if (!child.isLight) {
-            scene.remove(child)
-        }
-    })
-
     //console.log(values)
     doc = new rhino.File3dm()
 
@@ -240,6 +233,13 @@ function collectResults(responseJson) {
             child.material = new THREE.MeshNormalMaterial()
         }, false)
         */
+
+        // clear objects from scene. do this here to avoid blink
+        scene.traverse(child => {
+            if (!child.isLight) {
+                scene.remove(child)
+            }
+        })
 
         // add object graph from rhino model to three.js scene
         scene.add( object )
